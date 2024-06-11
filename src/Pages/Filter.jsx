@@ -1,8 +1,10 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import "tailwindcss/tailwind.css";
 import Cards from "../Components/Card";
 import Checkboxes from "../Components/Checkboxes";
+import ShowFields from "../Components/ShowFields";
 
 const Filters = () => {
   const [dataOptions, setDataOptions] = useState({
@@ -14,7 +16,6 @@ const Filters = () => {
     plans: [],
     states: [],
   });
-
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedSubscriptions, setSelectedSubscriptions] = useState([]);
   const [selectedOS, setSelectedOS] = useState([]);
@@ -24,6 +25,16 @@ const Filters = () => {
   const [selectedStates, setSelectedStates] = useState([]);
 
   const [result, setResult] = useState(null);
+
+  const [showFields, setShowFields] = useState([
+    { value: 'showCountryData', label: 'Show Country Data', checked: false },
+    { value: 'showSubscriptionData', label: 'Show Subscription Data', checked: false },
+    { value: 'showOSData', label: 'Show OS Data', checked: false },
+    { value: 'showOSVersionData', label: 'Show OS Version Data', checked: false },
+    { value: 'showModelNameData', label: 'Show Model Name Data', checked: false },
+    { value: 'showPlanData', label: 'Show Plan Data', checked: false },
+    { value: 'showStateData', label: 'Show State Data', checked: false },
+  ]);
 
   useEffect(() => {
     const fetchDataOptions = async () => {
@@ -47,6 +58,14 @@ const Filters = () => {
     });
   };
 
+  const handleFieldChange = (fieldValue) => {
+    setShowFields((prevFields) =>
+      prevFields.map((field) =>
+        field.value === fieldValue ? { ...field, checked: !field.checked } : field
+      )
+    );
+  };
+
   const handleFilter = async () => {
     const query = new URLSearchParams();
 
@@ -60,6 +79,10 @@ const Filters = () => {
       states: selectedStates,
     };
 
+    showFields.forEach((field) => {
+      if (!field.checked) delete filters[field.value.replace('show', '').toLowerCase()];
+    });
+
     Object.keys(filters).forEach((key) => {
       const filterString = filters[key].map((option) => option.value).join(",");
       if (filterString) query.append(key, filterString);
@@ -69,7 +92,18 @@ const Filters = () => {
       `http://localhost:5000/api/data?${query.toString()}`
     );
     const result = await response.json();
-    setResult(result);
+    setResult({
+      data: result,
+      filters: {
+        showCountryData: showFields.find(field => field.value === 'showCountryData').checked,
+        showSubscriptionData: showFields.find(field => field.value === 'showSubscriptionData').checked,
+        showOSData: showFields.find(field => field.value === 'showOSData').checked,
+        showOSVersionData: showFields.find(field => field.value === 'showOSVersionData').checked,
+        showModelNameData: showFields.find(field => field.value === 'showModelNameData').checked,
+        showPlanData: showFields.find(field => field.value === 'showPlanData').checked,
+        showStateData: showFields.find(field => field.value === 'showStateData').checked,
+      }
+    });
   };
 
   return (
@@ -83,43 +117,43 @@ const Filters = () => {
           Submit
         </button>
       </div>
-      <div className="flex justify-center gap-10 mt-10">
-        <Checkboxes
-          label="Countries"
-          options={dataOptions.countries}
-          selectedOptions={selectedCountries}
-          handleChange={handleCheckboxChange(
-            setSelectedCountries,
-            selectedCountries
-          )}
-        />
-        <Checkboxes
-          label="Subscriptions"
-          options={dataOptions.subscriptions}
-          selectedOptions={selectedSubscriptions}
-          handleChange={handleCheckboxChange(
-            setSelectedSubscriptions,
-            selectedSubscriptions
-          )}
-        />
-        <Checkboxes
-          label="Operating Systems"
-          options={dataOptions.os}
-          selectedOptions={selectedOS}
-          handleChange={handleCheckboxChange(setSelectedOS, selectedOS)}
-        />
-        <Checkboxes
-          label="OS Versions"
-          options={dataOptions.osVersions}
-          selectedOptions={selectedOSVersions}
-          handleChange={handleCheckboxChange(
-            setSelectedOSVersions,
-            selectedOSVersions
-          )}
-        />
-      </div>
-      <div className="flex justify-center">
-        <div className="mx-12">
+      <div className="flex flex-col gap-10 mt-10">
+        <div className="grid grid-cols-4 gap-10">
+          <Checkboxes
+            label="Countries"
+            options={dataOptions.countries}
+            selectedOptions={selectedCountries}
+            handleChange={handleCheckboxChange(
+              setSelectedCountries,
+              selectedCountries
+            )}
+          />
+          <Checkboxes
+            label="Subscriptions"
+            options={dataOptions.subscriptions}
+            selectedOptions={selectedSubscriptions}
+            handleChange={handleCheckboxChange(
+              setSelectedSubscriptions,
+              selectedSubscriptions
+            )}
+          />
+          <Checkboxes
+            label="Operating Systems"
+            options={dataOptions.os}
+            selectedOptions={selectedOS}
+            handleChange={handleCheckboxChange(setSelectedOS, selectedOS)}
+          />
+          <Checkboxes
+            label="OS Versions"
+            options={dataOptions.osVersions}
+            selectedOptions={selectedOSVersions}
+            handleChange={handleCheckboxChange(
+              setSelectedOSVersions,
+              selectedOSVersions
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-10">
           <Checkboxes
             label="Model Names"
             options={dataOptions.modelNames}
@@ -129,16 +163,12 @@ const Filters = () => {
               selectedModelNames
             )}
           />
-        </div>
-        <div className="mx-12">
           <Checkboxes
             label="Plans"
             options={dataOptions.plans}
             selectedOptions={selectedPlans}
             handleChange={handleCheckboxChange(setSelectedPlans, selectedPlans)}
           />
-        </div>
-        <div className="mx-12">
           <Checkboxes
             label="States"
             options={dataOptions.states}
@@ -150,7 +180,12 @@ const Filters = () => {
           />
         </div>
       </div>
-      <div className="mt-12 py-12">
+      <div className="flex flex-col gap-10 mt-10">
+        <div className="flex gap-10">
+          <ShowFields fields={showFields} handleFieldChange={handleFieldChange} />
+        </div>
+      </div>
+      <div className="py-12">
         {selectedCountries.length === 0 &&
           selectedSubscriptions.length === 0 &&
           selectedOS.length === 0 &&
@@ -164,7 +199,18 @@ const Filters = () => {
               <p>Please choose the data you would like to view.</p>
             </div>
           )}
-        {result && <Cards result={result} />}
+        {result && (
+          <Cards
+            result={result.data}
+            showCountryData={result.filters.showCountryData}
+            showSubscriptionData={result.filters.showSubscriptionData}
+            showOSData={result.filters.showOSData}
+            showOSVersionData={result.filters.showOSVersionData}
+            showModelNameData={result.filters.showModelNameData}
+            showPlanData={result.filters.showPlanData}
+            showStateData={result.filters.showStateData}
+          />
+        )}
       </div>
     </div>
   );
