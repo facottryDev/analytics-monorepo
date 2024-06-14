@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +8,7 @@ export default function Login({ setIsLoggedIn }) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorOverlay, setShowErrorOverlay] = useState(false);
+  const [showSuccessOverlay, setShowSuccessOverlay] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -24,7 +26,7 @@ export default function Login({ setIsLoggedIn }) {
       setPassword("");
       setErrorMessage("");
       setShowErrorOverlay(false);
-      navigate("/filters"); // Navigate to filters page
+      setShowSuccessOverlay(true); // Show success message
     } catch (error) {
       console.error(error);
       if (error.response && error.response.data && error.response.data.error) {
@@ -37,6 +39,19 @@ export default function Login({ setIsLoggedIn }) {
     }
   };
 
+  const handleOkClick = () => {
+    setShowErrorOverlay(false);
+    if (errorMessage === "User not found. Please signup.") {
+      navigate("/registration");
+    }
+    setErrorMessage(""); // Reset error message
+  };
+
+  const handleSuccessOkClick = () => {
+    setShowSuccessOverlay(false);
+    navigate("/filters"); // Navigate to filters page after successful login
+  };
+
   return (
     <div className="relative">
       {showErrorOverlay && (
@@ -46,7 +61,21 @@ export default function Login({ setIsLoggedIn }) {
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-black p-4 z-30 shadow-md rounded-md flex flex-col items-center">
           <p className="text-lg mb-4">{errorMessage}</p>
           <button
-            onClick={() => setShowErrorOverlay(false)}
+            onClick={handleOkClick}
+            className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 mt-4"
+          >
+            OK
+          </button>
+        </div>
+      )}
+      {showSuccessOverlay && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black opacity-50 z-10"></div>
+      )}
+      {showSuccessOverlay && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white text-black p-4 z-30 shadow-md rounded-md flex flex-col items-center">
+          <p className="text-lg mb-4">Login successful!</p>
+          <button
+            onClick={handleSuccessOkClick}
             className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 mt-4"
           >
             OK

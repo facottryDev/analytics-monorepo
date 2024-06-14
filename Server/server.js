@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
-import { dataOptions, data } from './data.js';
+import { dataOptions, data, entries } from './data.js';
 
 dotenv.config();
 
@@ -122,6 +122,25 @@ app.get('/api/data', (req, res) => {
 
   res.json(response);
 });
+
+// Endpoint to get filtered log entries
+app.get('/api/entries', (req, res) => {
+  const { countries, subscriptions } = req.query;
+  let filteredEntries = entries;
+
+  if (countries) {
+    const countryList = countries.split(',');
+    filteredEntries = filteredEntries.filter(entry => countryList.includes(entry.country));
+  }
+
+  if (subscriptions) {
+    const subscriptionList = subscriptions.split(',');
+    filteredEntries = filteredEntries.filter(entry => subscriptionList.includes(entry.subscription));
+  }
+
+  res.json(filteredEntries);
+});
+
 
 // Signup endpoint
 app.post('/signup', async (req, res) => {

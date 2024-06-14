@@ -1,4 +1,4 @@
-import FormGroup from '@mui/material/FormGroup';
+/* eslint-disable react/prop-types */
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Box from '@mui/material/Box';
