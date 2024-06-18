@@ -47,6 +47,17 @@ userSchema.pre('save', async function (next) {
 
 const User = mongoose.model('User', userSchema);
 
+// New API endpoint for handling request with headers and body
+app.post('/api/submit', (req, res) => {
+  const headers = req.headers;
+  const body = req.body;
+
+  console.log('Headers:', headers);
+  console.log('Body:', body);
+
+  res.json({ success: true, headers, body });
+});
+
 app.get('/api/data-options', (req, res) => {
   res.json(dataOptions);
 });
@@ -141,7 +152,6 @@ app.get('/api/entries', (req, res) => {
   res.json(filteredEntries);
 });
 
-
 // Signup endpoint
 app.post('/signup', async (req, res) => {
   try {
@@ -196,6 +206,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => { 
+app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

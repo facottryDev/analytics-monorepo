@@ -13,7 +13,12 @@ import {
   Box,
   Typography,
   TablePagination,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
 } from "@mui/material";
+import Reqres from "../Components/Reqres";
 
 const LogManager = () => {
   const [countries, setCountries] = useState([]);
@@ -27,9 +32,7 @@ const LogManager = () => {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:5000/api/data-options"
-        );
+        const response = await axios.get("http://localhost:5000/api/data-options");
         setCountries(response.data.countries || []);
         setSubscriptions(response.data.subscriptions || []);
       } catch (error) {
@@ -91,116 +94,99 @@ const LogManager = () => {
   );
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Log Manager
-      </Typography>
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "16px", // Adds space between the boxes
-          marginBottom: "24px", // Adds some space below the boxes
-        }}
-      >
+    <>
+      <Box sx={{ padding: "24px", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
+        <Typography variant="h4" gutterBottom>
+          Log Manager
+        </Typography>
         <Box
           sx={{
-            border: "1px solid #1976d2", // Primary color border
-            borderRadius: "8px",
-            padding: "16px",
             display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
             flexDirection: "row",
-            gap:"20px",
-            width: "100%",
-            maxWidth: "300px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow for a nicer look
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+            marginBottom: "24px",
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{ marginBottom: "8px", color: "#1976d2" }}
-          >
-            Countries
-          </Typography>
-          <CheckLogs
-            items={countries}
-            selectedItems={selectedCountries}
-            handleChange={handleCountryChange}
-          />
+          <Card sx={{ maxWidth: "300px", flexGrow: 1 }}>
+            <CardHeader
+              title="Countries"
+              sx={{ backgroundColor: "#1976d2", color: "#fff" }}
+            />
+            <CardContent>
+              <CheckLogs
+                items={countries}
+                selectedItems={selectedCountries}
+                handleChange={handleCountryChange}
+              />
+            </CardContent>
+          </Card>
+
+          <Card sx={{ maxWidth: "300px", flexGrow: 1 }}>
+            <CardHeader
+              title="Subscriptions"
+              sx={{ backgroundColor: "#1976d2", color: "#fff" }}
+            />
+            <CardContent>
+              <CheckLogs
+                items={subscriptions}
+                selectedItems={selectedSubscriptions}
+                handleChange={handleSubscriptionChange}
+              />
+            </CardContent>
+          </Card>
         </Box>
 
-        <Box
-          sx={{
-            border: "1px solid #1976d2", // Primary color border
-            borderRadius: "8px",
-            padding: "16px",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "row",
-            gap:"20px",
-            width: "100%",
-            maxWidth: "300px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Optional shadow for a nicer look
-          }}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleCheckLogs}
+          sx={{ marginBottom: "24px" }}
         >
-          <Typography
-            variant="h6"
-            sx={{ marginBottom: "8px", color: "#1976d2" }}
-          >
-            Subscriptions
-          </Typography>
-          <CheckLogs
-            items={subscriptions}
-            selectedItems={selectedSubscriptions}
-            handleChange={handleSubscriptionChange}
+          Check Logs
+        </Button>
+
+        <Paper elevation={3} sx={{ padding: "16px" }}>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Sr No.</TableCell>
+                  <TableCell>Country</TableCell>
+                  <TableCell>Subscription</TableCell>
+                  <TableCell>Project ID</TableCell>
+                  <TableCell>Company ID</TableCell>
+                  <TableCell>Action Items</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedEntries.map((entry) => (
+                  <TableRow key={entry.srNumber}>
+                    <TableCell>{entry.srNumber}</TableCell>
+                    <TableCell>{entry.country}</TableCell>
+                    <TableCell>{entry.subscription}</TableCell>
+                    <TableCell>{entry.projectId}</TableCell>
+                    <TableCell>{entry.companyId}</TableCell>
+                    <TableCell>{entry.actionItems}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Divider sx={{ marginY: "16px" }} />
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={entries.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
           />
-        </Box>
+        </Paper>
       </Box>
-
-      <Button variant="contained" color="primary" onClick={handleCheckLogs}>
-        Check Logs
-      </Button>
-
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Sr No.</TableCell>
-              <TableCell>Country</TableCell>
-              <TableCell>Subscription</TableCell>
-              <TableCell>Project ID</TableCell>
-              <TableCell>Company ID</TableCell>
-              <TableCell>Action Items</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedEntries.map((entry) => (
-              <TableRow key={entry.srNumber}>
-                <TableCell>{entry.srNumber}</TableCell>
-                <TableCell>{entry.country}</TableCell>
-                <TableCell>{entry.subscription}</TableCell>
-                <TableCell>{entry.projectId}</TableCell>
-                <TableCell>{entry.companyId}</TableCell>
-                <TableCell>{entry.actionItems}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10]}
-        component="div"
-        count={entries.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-      />
-    </Box>
+      <Reqres />
+    </>
   );
 };
 
