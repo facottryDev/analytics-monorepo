@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import CheckLogs from "../Components/CheckLogs";
 import {
   Button,
   Table,
@@ -13,10 +12,12 @@ import {
   Box,
   Typography,
   TablePagination,
-  Card,
-  CardContent,
-  CardHeader,
-  Divider,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import Reqres from "../Components/Reqres";
 
@@ -27,6 +28,7 @@ const LogManager = () => {
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedSubscriptions, setSelectedSubscriptions] = useState([]);
   const [page, setPage] = useState(0);
+  const [selectedEntry, setSelectedEntry] = useState(null);
   const rowsPerPage = 5;
 
   useEffect(() => {
@@ -53,20 +55,12 @@ const LogManager = () => {
     fetchEntries();
   }, []);
 
-  const handleCountryChange = (country) => {
-    setSelectedCountries((prev) =>
-      prev.includes(country)
-        ? prev.filter((item) => item !== country)
-        : [...prev, country]
-    );
+  const handleCountryChange = (event) => {
+    setSelectedCountries(event.target.value);
   };
 
-  const handleSubscriptionChange = (subscription) => {
-    setSelectedSubscriptions((prev) =>
-      prev.includes(subscription)
-        ? prev.filter((item) => item !== subscription)
-        : [...prev, subscription]
-    );
+  const handleSubscriptionChange = (event) => {
+    setSelectedSubscriptions(event.target.value);
   };
 
   const handleCheckLogs = async () => {
@@ -88,105 +82,102 @@ const LogManager = () => {
     setPage(newPage);
   };
 
-  const paginatedEntries = entries.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage
-  );
+  const handleEntryClick = (entry) => {
+    setSelectedEntry(entry);
+  };
 
   return (
-    <>
-      <Box sx={{ padding: "24px", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
-        <Typography variant="h4" gutterBottom>
-          Log Manager
-        </Typography>
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "16px",
-            marginBottom: "24px",
-          }}
-        >
-          <Card sx={{ maxWidth: "300px", flexGrow: 1 }}>
-            <CardHeader
-              title="Countries"
-              sx={{ backgroundColor: "#1976d2", color: "#fff" }}
-            />
-            <CardContent>
-              <CheckLogs
-                items={countries}
-                selectedItems={selectedCountries}
-                handleChange={handleCountryChange}
-              />
-            </CardContent>
-          </Card>
-
-          <Card sx={{ maxWidth: "300px", flexGrow: 1 }}>
-            <CardHeader
-              title="Subscriptions"
-              sx={{ backgroundColor: "#1976d2", color: "#fff" }}
-            />
-            <CardContent>
-              <CheckLogs
-                items={subscriptions}
-                selectedItems={selectedSubscriptions}
-                handleChange={handleSubscriptionChange}
-              />
-            </CardContent>
-          </Card>
-        </Box>
-
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleCheckLogs}
-          sx={{ marginBottom: "24px" }}
-        >
+    <Box sx={{ padding: "24px", backgroundColor: "#f4f6f8", minHeight: "100vh" }}>
+      <Typography variant="h4" gutterBottom>
+        Log Manager
+      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: "24px" }}>
+        <FormControl sx={{ margin: "8px", minWidth: 200 }}>
+          <InputLabel>Countries</InputLabel>
+          <Select
+            multiple
+            value={selectedCountries}
+            onChange={handleCountryChange}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {countries.map((country, index) => (
+              <MenuItem key={index} value={country}>
+                <Checkbox checked={selectedCountries.indexOf(country) > -1} />
+                <ListItemText primary={country} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl sx={{ margin: "8px", minWidth: 200 }}>
+          <InputLabel>Subscriptions</InputLabel>
+          <Select
+            multiple
+            value={selectedSubscriptions}
+            onChange={handleSubscriptionChange}
+            renderValue={(selected) => selected.join(", ")}
+          >
+            {subscriptions.map((subscription, index) => (
+              <MenuItem key={index} value={subscription}>
+                <Checkbox checked={selectedSubscriptions.indexOf(subscription) > -1} />
+                <ListItemText primary={subscription} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button variant="contained" onClick={handleCheckLogs} sx={{ margin: "8px", height: '56px' }}>
           Check Logs
         </Button>
-
-        <Paper elevation={3} sx={{ padding: "16px" }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Sr No.</TableCell>
-                  <TableCell>Country</TableCell>
-                  <TableCell>Subscription</TableCell>
-                  <TableCell>Project ID</TableCell>
-                  <TableCell>Company ID</TableCell>
-                  <TableCell>Action Items</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {paginatedEntries.map((entry) => (
-                  <TableRow key={entry.srNumber}>
-                    <TableCell>{entry.srNumber}</TableCell>
-                    <TableCell>{entry.country}</TableCell>
-                    <TableCell>{entry.subscription}</TableCell>
-                    <TableCell>{entry.projectId}</TableCell>
-                    <TableCell>{entry.companyId}</TableCell>
-                    <TableCell>{entry.actionItems}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <Divider sx={{ marginY: "16px" }} />
-          <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
-            component="div"
-            count={entries.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onPageChange={handleChangePage}
-          />
-        </Paper>
       </Box>
-      <Reqres />
-    </>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>SR Number</TableCell>
+              <TableCell>Country</TableCell>
+              <TableCell>Subscription</TableCell>
+              <TableCell>View</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {entries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((entry, index) => (
+              <TableRow key={index} onClick={() => handleEntryClick(entry)} sx={{ cursor: "pointer" }}>
+                <TableCell>{entry.srNumber}</TableCell>
+                <TableCell>{entry.country}</TableCell>
+                <TableCell>{entry.subscription}</TableCell>
+                <TableCell>
+                  <Button 
+                    variant="outlined" 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      handleEntryClick(entry); 
+                    }}
+                    sx={{ 
+                      borderColor: '#1976d2', 
+                      color: '#1976d2', 
+                      '&:hover': {
+                        backgroundColor: '#1976d2', 
+                        color: '#fff'
+                      } 
+                    }}
+                  >
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={entries.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+      />
+      {selectedEntry && <Reqres selectedEntry={selectedEntry} />}
+    </Box>
   );
 };
 
